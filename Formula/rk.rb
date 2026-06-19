@@ -1,4 +1,4 @@
-# Generated with JReleaser 1.24.0 at 2026-06-19T23:07:23.179767644Z
+# Generated with JReleaser 1.24.0 at 2026-06-19T23:28:07.350085567Z
 
 class Rk < Formula
   desc "rk — the unified redux-kotlin CLI (devtools + snapshot)"
@@ -8,25 +8,28 @@ class Rk < Formula
 
   if OS.mac? && Hardware::CPU.arm?
     url "https://github.com/reduxkotlin/redux-kotlin/releases/download/1.0.0-alpha02/rk-1.0.0-alpha02-osx-aarch_64.zip"
-    sha256 "80ee4ade44b0f9789ed35bd5bc3a718bdf99134b87ee3c924afa71b86b7f82bd"
+    sha256 "f44a60ff687719c40de2a2b8faae78c1c4865b853d25660f2dde4da042c88ad5"
   end
 
 
   # The archives are jpackage app-images with a single top-level wrapper dir, which Homebrew strips
   # on unpack: macOS `rk.app/` -> `Contents/` lands at libexec root (launcher at Contents/MacOS/rk);
-  # Linux `rk/` -> `bin/` lands at libexec root (launcher at bin/rk). The default JLINK formula's
-  # `#{libexec}/bin/rk` is therefore right for Linux but wrong for macOS. The macOS zip also loses
-  # the launcher's exec bit (Gradle Zip doesn't preserve unix perms), so restore it. post_install
-  # dylib re-signing is dropped: the .app's dylibs live inside the bundle, not in `#{libexec}/lib`,
-  # and the bundled runtime + Skiko load fine as-is (verified: `rk snapshot --scene counter --preset n3 --out /tmp/test.png` renders).
+  # Linux `rk/` -> `bin/` lands at libexec root (launcher at bin/rk). We ship a `bin/rk` WRAPPER that
+  # exec's the launcher by ABSOLUTE path instead of `bin.install_symlink`: the jpackage launcher
+  # self-locates from $0, and Homebrew's relative double-symlink (HOMEBREW/bin/rk -> ../Cellar/.../bin/rk
+  # -> libexec/...) makes it mis-resolve its app dir (it looks for Contents/app/rk.cfg in the wrong
+  # place). The macOS zip also loses the launcher's exec bit (Gradle Zip doesn't preserve unix perms),
+  # so restore it. post_install dylib re-signing is dropped: the .app's dylibs are inside the bundle,
+  # and the bundled runtime + Skiko load fine as-is (verified end-to-end via a real brew install).
   def install
     libexec.install Dir["*"]
-    if OS.mac?
-      chmod 0755, "#{libexec}/Contents/MacOS/rk"
-      bin.install_symlink "#{libexec}/Contents/MacOS/rk" => "rk"
-    else
-      bin.install_symlink "#{libexec}/bin/rk" => "rk"
-    end
+    target = OS.mac? ? "#{libexec}/Contents/MacOS/rk" : "#{libexec}/bin/rk"
+    chmod 0755, target
+    (bin/"rk").write <<~SH
+      #!/bin/sh
+      exec "#{target}" "$@"
+    SH
+    chmod 0755, bin/"rk"
   end
 
   test do
