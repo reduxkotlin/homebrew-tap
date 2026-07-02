@@ -1,14 +1,14 @@
-# Generated with JReleaser 1.24.0 at 2026-07-01T14:18:56.22217731Z
+# Generated with JReleaser 1.24.0 at 2026-07-02T17:15:47.497806874Z
 
 class Rk < Formula
   desc "rk — the unified redux-kotlin CLI (devtools + snapshot)"
   homepage "https://reduxkotlin.org"
-  version "1.0.0-alpha03"
+  version "1.0.0-alpha04"
   license "Apache-2.0"
 
   if OS.mac? && Hardware::CPU.arm?
-    url "https://github.com/reduxkotlin/redux-kotlin/releases/download/1.0.0-alpha03/rk-1.0.0-alpha03-osx-aarch_64.zip"
-    sha256 "6e201714e01df322e25d5f4d81142ed79e5089ca23c87c22cc93ae183af01ef0"
+    url "https://github.com/reduxkotlin/redux-kotlin/releases/download/1.0.0-alpha04/rk-1.0.0-alpha04-osx-aarch_64.zip"
+    sha256 "ad86aa9b69cc63c8f290ea2d1fd9d21a3001565c5d7b158564ab8fccd56b4c51"
   end
 
 
@@ -34,6 +34,6 @@ class Rk < Formula
 
   test do
     output = shell_output("#{bin}/rk --version")
-    assert_match "1.0.0-alpha03", output
+    assert_match "1.0.0-alpha04", output
   end
 end
