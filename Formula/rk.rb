@@ -32,8 +32,34 @@ class Rk < Formula
     chmod 0755, bin/"rk"
   end
 
+  # Undo Homebrew's relocation of the bundled JRE.
+  #
+  # Keg#fix_dynamic_linkage rewrites EVERY dylib's LC_ID_DYLIB to its absolute opt path, including
+  # the bundled runtime's libjvm.dylib (`@rpath/libjvm.dylib` -> `#{HOMEBREW_PREFIX}/opt/rk/...`).
+  # AWT's libjawt.dylib links `@rpath/libjvm.dylib` and resolved it by matching the already-loaded
+  # image's install name; once the id is absolute that match fails and dyld searches the rpaths
+  # instead. So the JVM booted (the launcher dlopens libjvm by path) but the first window died with
+  # "Library not loaded: @rpath/libjvm.dylib" — i.e. headless `rk` worked and `rk devtools serve
+  # --ui` did not. post_install runs AFTER fix_dynamic_linkage, so restore the id and re-sign here.
+  def post_install
+    return unless OS.mac?
+
+    jvm = libexec/"Contents/runtime/Contents/Home/lib/server/libjvm.dylib"
+    return unless jvm.exist?
+
+    system "install_name_tool", "-id", "@rpath/libjvm.dylib", jvm
+    system "codesign", "--force", "--sign", "-", jvm
+  end
+
   test do
     output = shell_output("#{bin}/rk --version")
     assert_match "1.0.0-alpha04", output
+
+    # Guards the relocation repair above: with an absolute id, AWT/Skiko cannot load libjvm and
+    # every GUI subcommand fails at the first window.
+    if OS.mac?
+      jvm = "#{libexec}/Contents/runtime/Contents/Home/lib/server/libjvm.dylib"
+      assert_match "@rpath/libjvm.dylib", shell_output("otool -D #{jvm}")
+    end
   end
 end
