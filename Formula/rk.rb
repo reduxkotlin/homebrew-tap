@@ -1,14 +1,14 @@
-# Generated with JReleaser 1.24.0 at 2026-07-16T06:41:20.482422963Z
+# Generated with JReleaser 1.24.0 at 2026-07-18T01:46:16.909594186Z
 
 class Rk < Formula
   desc "rk — the unified redux-kotlin CLI (devtools + snapshot)"
   homepage "https://reduxkotlin.org"
-  version "1.0.0-alpha05"
+  version "1.0.0-alpha06"
   license "Apache-2.0"
 
   if OS.mac? && Hardware::CPU.arm?
-    url "https://github.com/reduxkotlin/redux-kotlin/releases/download/1.0.0-alpha05/rk-1.0.0-alpha05-osx-aarch_64.zip"
-    sha256 "d1278ea80ff81535b20f175c521049a4a2705fad7f6ed39b0918b586ff94404c"
+    url "https://github.com/reduxkotlin/redux-kotlin/releases/download/1.0.0-alpha06/rk-1.0.0-alpha06-osx-aarch_64.zip"
+    sha256 "f6591f078f6b8126d1bae39271d8cf56a21e223e0a221b904c1b764355eac7c0"
   end
 
 
@@ -55,7 +55,7 @@ class Rk < Formula
 
   test do
     output = shell_output("#{bin}/rk --version")
-    assert_match "1.0.0-alpha05", output
+    assert_match "1.0.0-alpha06", output
 
     # Guards the relocation repair above: with an absolute id, AWT/Skiko cannot load libjvm and
     # every GUI subcommand fails at the first window.
